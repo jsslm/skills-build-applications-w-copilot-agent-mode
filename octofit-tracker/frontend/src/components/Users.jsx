@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react'
-import { fetchResource } from '../api'
+import { apiBaseUrl, getItems } from '../api'
+
+// Codespaces endpoint: https://${import.meta.env.VITE_CODESPACE_NAME}-8000.app.github.dev/api/users/
+const usersEndpoint = `${apiBaseUrl}/api/users/`
 
 function Users() {
   const [users, setUsers] = useState([])
@@ -8,7 +11,12 @@ function Users() {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchResource('users', controller.signal)
+    fetch(usersEndpoint, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error('Não foi possível carregar users.')
+        return response.json()
+      })
+      .then((payload) => getItems(payload))
       .then(setUsers)
       .then(() => setState('ready'))
       .catch((requestError) => {
